@@ -39,15 +39,15 @@ func (m User) ParseUser(ctx *gin.Context) *User {
 }
 
 func (m User) Upsert(ctx *gin.Context, user User) (User, error) {
-	var newData, prevData User
-	var parsedPrevData *User
+	var newData, oldData User
+	var parseOldData *User
 	action := "POST"
 
 	setClause := m.parseSetClause()
 
 	if user.UUID != "" {
-		db.NewSelect().Model(&prevData).Where("uuid = ?", user.UUID).Scan(ctx, &prevData)
-		parsedPrevData = &prevData
+		db.NewSelect().Model(&oldData).Where("uuid = ?", user.UUID).Scan(ctx, &oldData)
+		parseOldData = &oldData
 		action = "PUT"
 	}
 
@@ -65,7 +65,7 @@ func (m User) Upsert(ctx *gin.Context, user User) (User, error) {
 	}
 
 	newData = user
-	go auditLog(ctx, parsedPrevData, newData, user.ID, "user", action, errMsg)
+	go auditLog(ctx, parseOldData, newData, user.ID, "user", action, errMsg)
 	return user, err
 }
 

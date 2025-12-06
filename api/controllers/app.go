@@ -3,12 +3,14 @@ package controllers
 import (
 	"api/middleware"
 	"api/utils"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 type AppController struct {
@@ -48,6 +50,14 @@ func (c *AppController) sanitizeCtx(ctx *gin.Context) (ginCtx *gin.Context, uuid
 	}
 
 	return
+}
+
+func (c *AppController) cleanErr(err error) string {
+	if pgErr, ok := err.(pgdriver.Error); ok {
+		return fmt.Sprintf("Postgres Error: %s", pgErr.Field('M'))
+	}
+
+	return fmt.Sprintf("Unknown Error: %s", err.Error())
 }
 
 func (c *AppController) handleError(ctx *gin.Context, err error, message string) {

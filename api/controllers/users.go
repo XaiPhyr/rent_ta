@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 type UserController struct {
@@ -69,12 +68,4 @@ func (c UserController) Delete(ctx *gin.Context) {
 	} else {
 		c.handleError(ctx, err, c.cleanErr(err))
 	}
-}
-
-func (c UserController) cleanErr(err error) string {
-	if pgErr, ok := err.(pgdriver.Error); ok {
-		return fmt.Sprintf("Postgres Error: %s", pgErr.Field('M'))
-	}
-
-	return fmt.Sprintf("Unknown Error: %s", err.Error())
 }
