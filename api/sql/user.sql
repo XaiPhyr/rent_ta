@@ -1,0 +1,26 @@
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id bigserial primary key,
+  username varchar(45),
+  password varchar(255),
+  email varchar(255) unique,
+  first_name varchar(255),
+  middle_name varchar(255),
+  last_name varchar(255),
+  mobile varchar(45) unique,
+  address jsonb,
+  optin boolean not null default false,
+  last_login timestamptz,
+  metadata jsonb,
+  is_admin boolean not null default false,
+  active boolean not null default true,
+  status varchar(1) not null default 'O',
+  flag varchar(45),
+  uuid uuid not null default gen_random_uuid() unique,
+  created_at timestamptz not null default now(),
+  created_by bigint default 0,
+  updated_at timestamptz not null default now(),
+  updated_by bigint default 0,
+  deleted_at timestamptz,
+  deleted_by bigint default 0
+);
