@@ -63,6 +63,7 @@ func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status
 		}
 	}
 
+	q = q.Order("id ASC")
 	if sortFields != "" {
 		sortFieldList := strings.SplitSeq(sortFields, ",")
 		for sortField := range sortFieldList {
@@ -74,8 +75,6 @@ func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status
 				}
 			}
 		}
-	} else {
-		q = q.Order("id ASC")
 	}
 
 	if status != "" {
