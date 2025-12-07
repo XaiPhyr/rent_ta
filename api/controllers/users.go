@@ -22,50 +22,45 @@ func (c UserController) InitUserController(router *gin.Engine) {
 }
 
 func (c UserController) Upsert(ctx *gin.Context) {
-	form := c.u.ParseUser(ctx)
-
-	if err := ctx.ShouldBindJSON(form); err == nil {
-		res, err := c.u.Upsert(ctx, *form)
-
-		if err != nil {
-			c.handleError(ctx, err, c.cleanErr(err))
-			return
-		}
-
-		ctx.JSON(http.StatusCreated, gin.H{"data": res})
-	} else {
+	var form *models.User
+	if err := ctx.ShouldBindJSON(&form); err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
+		return
 	}
+
+	httpStatus, res, err := c.u.Upsert(ctx, *form)
+
+	if err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	ctx.JSON(httpStatus, gin.H{"data": res})
 }
 
 func (c UserController) Read(ctx *gin.Context) {
-	uuid := ctx.Param("uuid")
+	q := c.sanitizeCtx(ctx)
+	res, err := c.u.Read(q)
 
-	if res, err := c.u.Read(c.sanitizeCtx(ctx)); err == nil {
-		data := gin.H{"total": res.Count, "data": res.Users}
-
-		if uuid != "all" {
-			data = gin.H{"data": res.User}
-		}
-
-		ctx.JSON(http.StatusOK, data)
-	} else {
+	if err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	if q.UUID != "all" {
+		ctx.JSON(http.StatusOK, gin.H{"data": res.User})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"total": res.Count, "data": res.Users})
 	}
 }
 
 func (c UserController) Delete(ctx *gin.Context) {
-	uuid := ctx.Param("uuid")
+	deletedAt, msg, err := c.u.Delete(ctx, ctx.Param("uuid"))
 
-	if user, err := c.u.Delete(ctx, uuid); err == nil {
-		msg := "User deleted successfully"
-
-		if user.DeletedAt.IsZero() {
-			msg = "User restored successfully"
-		}
-
-		ctx.JSON(http.StatusOK, gin.H{"deleted_at": user.DeletedAt, "message": msg})
-	} else {
+	if err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
+		return
 	}
+
+	ctx.JSON(http.StatusOK, gin.H{"deleted_at": deletedAt.String(), "message": msg})
 }

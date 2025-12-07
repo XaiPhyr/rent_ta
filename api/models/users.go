@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,110 +33,11 @@ type (
 	}
 )
 
-func (m User) ParseUser(ctx *gin.Context) *User {
-	return &User{}
-}
+func (m User) Upsert(ctx *gin.Context, user User) (int, User, error) {
+	var oldData *User
+	httpStatus, action := 201, "POST"
 
-func (m User) Upsert(ctx *gin.Context, user User) (User, error) {
-	var newData, oldData User
-	var parseOldData *User
-	action := "POST"
-
-	setClause := m.parseSetClause()
-
-	if user.UUID != "" {
-		db.NewSelect().Model(&oldData).Where("uuid = ?", user.UUID).Scan(ctx, &oldData)
-		parseOldData = &oldData
-		action = "PUT"
-	}
-
-	err := executeTransaction(ctx, func(trx *bun.Tx) error {
-		q := trx.NewInsert().Model(&user)
-		q = q.On("CONFLICT (uuid) DO UPDATE")
-		q = q.Set(setClause)
-		_, err := q.Exec(ctx)
-		return err
-	})
-
-	errMsg := ""
-	if err != nil {
-		errMsg = err.Error()
-	}
-
-	newData = user
-	go auditLog(ctx, parseOldData, newData, user.ID, "user", action, errMsg)
-	return user, err
-}
-
-func (m User) Read(ctx *gin.Context, uuid, filter, filterExt, sort, status string, limit, page int) (res UserResults, err error) {
-	cols := []string{}
-	q := db.NewSelect()
-
-	if uuid != "all" {
-		return res, q.Model(&res.User).Where("uuid = ?", uuid).Scan(ctx, &res.User)
-	}
-
-	q = q.Model(&res.Users)
-	q = sanitizeQuery(q, cols, filter, sort, status, m.validateField)
-	q = m.applyFilter(q, filterExt)
-
-	if limit > 0 {
-		q = q.Limit(limit)
-
-		if page > 0 {
-			offset := (page - 1) * limit
-			q = q.Offset(offset)
-		}
-	}
-
-	res.Count, err = q.ScanAndCount(ctx)
-	return res, err
-}
-
-func (m User) Delete(ctx *gin.Context, uuid string) (user User, err error) {
-	err = executeTransaction(ctx, func(trx *bun.Tx) error {
-		q := trx.NewUpdate().Model(&user).Where("uuid = ?", uuid)
-		q = q.Set("deleted_at = CASE WHEN deleted_at IS NULL THEN NOW() ELSE NULL END")
-		q = q.Returning("deleted_at, id")
-		_, err = q.Exec(ctx)
-		return err
-	})
-
-	var deletedAt any
-	if !user.DeletedAt.IsZero() {
-		deletedAt = map[string]string{"deleted_at": user.DeletedAt.String()}
-	}
-
-	errMsg := ""
-	if err != nil {
-		errMsg = err.Error()
-	}
-
-	go auditLog(ctx, nil, deletedAt, user.ID, "user", "DELETE", errMsg)
-	return
-}
-
-func (m User) applyFilter(q *bun.SelectQuery, filterExt string) *bun.SelectQuery {
-	if filterExt == "" {
-		return q
-	}
-
-	filters := strings.SplitSeq(filterExt, ",")
-	for f := range filters {
-		kv := strings.Split(f, "=")
-
-		if len(kv) == 2 {
-			k, v := kv[0], kv[1]
-
-			q = q.Where(k+" = ?", v)
-		}
-	}
-
-	return q
-}
-
-func (m User) parseSetClause() string {
-	cols := []string{
+	var setClauseColumns = []string{
 		"username",
 		"email",
 		"first_name",
@@ -151,23 +51,54 @@ func (m User) parseSetClause() string {
 		"updated_at",
 	}
 
-	setClauses := make([]string, 0, len(cols))
-	for _, col := range cols {
-		setClauses = append(setClauses, col+" = EXCLUDED."+col)
+	if user.UUID != "" {
+		var tmp User
+		if err := db.NewSelect().Model(&tmp).Where("uuid = ?", user.UUID).Scan(ctx); err == nil {
+			httpStatus, action, oldData = 200, "PUT", &tmp
+		}
 	}
 
-	return strings.Join(setClauses, ", ")
+	setClause := parseSetClause(setClauseColumns)
+	err := executeTransaction(ctx, func(trx *bun.Tx) error {
+		_, err := trx.NewInsert().
+			Model(&user).
+			On("CONFLICT (uuid) DO UPDATE").
+			Set(setClause).
+			Exec(ctx)
+		return err
+	})
+
+	go auditLog(ctx, oldData, user, user.ID, "user", action, err)
+	return httpStatus, user, err
 }
 
-func (m User) validateField(sortField string) bool {
-	after, _ := strings.CutPrefix(sortField, "-")
+func (m User) Read(qp QueryParams) (res UserResults, err error) {
+	var coalesceColumns = []string{}
 
-	allowedSortFields := map[string]bool{
+	var allowedSortFields = map[string]bool{
 		"id":         true,
 		"username":   true,
 		"email":      true,
 		"created_at": true,
 	}
 
-	return allowedSortFields[after]
+	q := db.NewSelect()
+
+	if qp.UUID != "all" {
+		return res, q.Model(&res.User).Where("uuid = ?", qp.UUID).Scan(qp.Ctx, &res.User)
+	}
+
+	q = q.Model(&res.Users)
+	q = sanitizeQuery(q, coalesceColumns, qp.Filter, qp.Sort, qp.Status, qp.Limit, qp.Page, allowedSortFields)
+	q = applyGlobalFilterExt(q, qp.FilterExtOp, qp.FilterExt)
+
+	res.Count, err = q.ScanAndCount(qp.Ctx)
+	return res, err
+}
+
+func (m User) Delete(ctx *gin.Context, uuid string) (deletedAt time.Time, msg string, err error) {
+	id, deletedAt, msg, err := softDelete(ctx, "users", uuid)
+
+	go auditLog(ctx, nil, map[string]string{"deleted_at": deletedAt.String()}, id, "user", "DELETE", err)
+	return
 }

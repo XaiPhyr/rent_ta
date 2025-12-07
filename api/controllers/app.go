@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"api/middleware"
+	"api/models"
 	"api/utils"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,43 +13,43 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-type AppController struct {
-	mw middleware.Middleware
-}
-
-var (
-	apiVersion = utils.InitConfig().Server.Endpoint
+type (
+	AppController struct {
+		mw middleware.Middleware
+	}
 )
 
-func (c *AppController) sanitizeCtx(ctx *gin.Context) (ginCtx *gin.Context, uuid, filter, filterExt, sort, status string, limitInt, pageInt int) {
-	ginCtx = ctx
-	uuid = ctx.Param("uuid")
-	sort = ctx.Query("sort")
-	limit := ctx.Query("limit")
-	page := ctx.Query("page")
-	filter = ctx.Query("filter")
-	status = ctx.Query("status")
+var apiVersion = utils.InitConfig().Server.Endpoint
 
-	// QueryUnescape for filterExt
-	qUnescape, err := url.QueryUnescape(ctx.Query("filterExt"))
-	if err != nil {
-		log.Printf("Error Query Unescape: %s", err)
-		filterExt = ""
-	} else {
-		filterExt = qUnescape
+func (c *AppController) sanitizeCtx(ctx *gin.Context) models.QueryParams {
+	limit, _ := strconv.Atoi(ctx.Query("limit"))
+	if limit <= 0 {
+		limit = 10
 	}
 
-	limitInt, err = strconv.Atoi(limit)
-	if err != nil || limitInt <= 0 {
-		limitInt = 10
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	if page <= 0 {
+		page = 1
 	}
 
-	pageInt, err = strconv.Atoi(page)
-	if err != nil || pageInt <= 0 {
-		pageInt = 1
+	filterExt, _ := url.QueryUnescape(ctx.Query("filterExt"))
+
+	filterExtOp := ctx.Query("filterExtOp")
+	if filterExtOp == "" {
+		filterExtOp = "AND"
 	}
 
-	return
+	return models.QueryParams{
+		UUID:        ctx.Param("uuid"),
+		Sort:        ctx.Query("sort"),
+		Status:      ctx.Query("status"),
+		Filter:      ctx.Query("filter"),
+		FilterExtOp: filterExtOp,
+		FilterExt:   filterExt,
+		Limit:       limit,
+		Page:        page,
+		Ctx:         ctx,
+	}
 }
 
 func (c *AppController) cleanErr(err error) string {

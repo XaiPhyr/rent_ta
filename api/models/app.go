@@ -45,11 +45,23 @@ type (
 		UserAgent        string    `bun:"user_agent" json:"user_agent"`
 		CreatedAt        time.Time `bun:"created_at,notnull,default:current_timestamp" json:"created_at,omitzero"`
 	}
+
+	QueryParams struct {
+		UUID        string
+		Filter      string
+		FilterExtOp string
+		FilterExt   string
+		Sort        string
+		Status      string
+		Limit       int
+		Page        int
+		Ctx         *gin.Context
+	}
 )
 
 var db = utils.InitDB()
 
-func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status string, validateField func(string) bool) *bun.SelectQuery {
+func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status string, limit, page int, allowedSortFields map[string]bool) *bun.SelectQuery {
 	if len(cols) > 0 {
 		var cls []string
 		for _, col := range cols {
@@ -66,7 +78,7 @@ func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status
 	if sortFields != "" {
 		sortFieldList := strings.SplitSeq(sortFields, ",")
 		for sortField := range sortFieldList {
-			if validateField(sortField) {
+			if validateField(allowedSortFields, sortField) {
 				if after, ok := strings.CutPrefix(sortField, "-"); ok {
 					q = q.Order(after + " DESC")
 				} else {
@@ -80,6 +92,36 @@ func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status
 
 	if status != "" {
 		q = q.Where("status = ?", status)
+	}
+
+	if limit > 0 {
+		q = q.Limit(limit)
+
+		if page > 0 {
+			offset := (page - 1) * limit
+			q = q.Offset(offset)
+		}
+	}
+
+	return q
+}
+
+func applyGlobalFilterExt(q *bun.SelectQuery, filterExtOp, filterExt string) *bun.SelectQuery {
+	if filterExt != "" {
+		filters := strings.Split(filterExt, ",")
+		for _, f := range filters {
+			kv := strings.Split(f, "=")
+
+			if len(kv) == 2 {
+				k, v := kv[0], kv[1]
+
+				if len(filters) > 1 && filterExtOp == "OR" {
+					q = q.WhereOr(k+" = ?", v)
+				} else {
+					q = q.Where(k+" = ?", v)
+				}
+			}
+		}
 	}
 
 	return q
@@ -99,13 +141,18 @@ func executeTransaction(ctx context.Context, trxFunc func(*bun.Tx) error) error 
 	return trx.Commit()
 }
 
-func auditLog(ctx *gin.Context, beforeDataChange, afterDataChange any, moduleId int64, module, action, description string) {
+func auditLog(ctx *gin.Context, beforeDataChange, afterDataChange any, moduleId int64, module, action string, err error) {
 	v, _ := ctx.Get("userId")
 
 	var userID int64
 	id, ok := v.(int)
 	if ok {
 		userID = int64(id)
+	}
+
+	errMsg := ""
+	if err != nil {
+		errMsg = err.Error()
 	}
 
 	auditLog := &AuditLog{
@@ -118,14 +165,54 @@ func auditLog(ctx *gin.Context, beforeDataChange, afterDataChange any, moduleId 
 		Module:           module,
 		BeforeDataChange: beforeDataChange,
 		AfterDataChange:  afterDataChange,
-		Description:      description,
+		Description:      errMsg,
 		IPAddress:        ctx.ClientIP(),
 		UserAgent:        ctx.Request.UserAgent(),
 	}
 
-	_, err := db.NewInsert().Model(auditLog).Exec(ctx)
+	_, dbErr := db.NewInsert().Model(auditLog).Exec(ctx)
 
-	if err != nil {
-		fmt.Println("AUDIT LOG ERR: ", err)
+	if dbErr != nil {
+		fmt.Println("AUDIT LOG ERR: ", dbErr)
 	}
+}
+
+func softDelete(ctx *gin.Context, tableName, uuid string) (id int64, deletedAt time.Time, msg string, err error) {
+	var temp struct {
+		ID        int64     `bun:"id"`
+		DeletedAt time.Time `bun:"deleted_at" json:"deleted_at"`
+	}
+
+	err = executeTransaction(ctx, func(trx *bun.Tx) error {
+		_, err := trx.NewUpdate().
+			Table(tableName).
+			Where("uuid = ?", uuid).
+			Set("deleted_at = CASE WHEN deleted_at IS NULL THEN NOW() ELSE NULL END").
+			Returning("deleted_at, id").
+			Exec(ctx, &temp)
+		return err
+	})
+
+	id = temp.ID
+	msg = "restored successfully"
+	if !temp.DeletedAt.IsZero() {
+		deletedAt = temp.DeletedAt
+		msg = "deleted successfully"
+	}
+
+	return
+}
+
+func parseSetClause(cols []string) string {
+	setClauses := make([]string, 0, len(cols))
+	for _, col := range cols {
+		setClauses = append(setClauses, col+" = EXCLUDED."+col)
+	}
+
+	return strings.Join(setClauses, ", ")
+}
+
+func validateField(allowedSortFields map[string]bool, sortField string) bool {
+	after, _ := strings.CutPrefix(sortField, "-")
+	return allowedSortFields[after]
 }
