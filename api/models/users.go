@@ -163,9 +163,10 @@ func (m User) validateField(sortField string) bool {
 	after, _ := strings.CutPrefix(sortField, "-")
 
 	allowedSortFields := map[string]bool{
-		"id":       true,
-		"username": true,
-		"email":    true,
+		"id":         true,
+		"username":   true,
+		"email":      true,
+		"created_at": true,
 	}
 
 	return allowedSortFields[after]
