@@ -61,23 +61,23 @@ type (
 
 var db = utils.InitDB()
 
-func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status string, limit, page int, allowedSortFields map[string]bool) *bun.SelectQuery {
+func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSortFields map[string]bool) *bun.SelectQuery {
+
 	if len(cols) > 0 {
 		var cls []string
 		for _, col := range cols {
 			cls = append(cls, "coalesce("+col+",'')")
 		}
 
-		filter = strings.ToLower(filter)
+		qp.Filter = strings.ToLower(qp.Filter)
 		cl := "(" + strings.Join(cls, " || ") + ")"
-		if filter != "" {
-			q = q.Where(cl+" ~* ?", filter)
+		if qp.Filter != "" {
+			q = q.Where(cl+" ~* ?", qp.Filter)
 		}
 	}
 
-	if sortFields != "" {
-		sortFieldList := strings.SplitSeq(sortFields, ",")
-		for sortField := range sortFieldList {
+	if qp.Sort != "" {
+		for sortField := range strings.SplitSeq(qp.Sort, ",") {
 			if validateField(allowedSortFields, sortField) {
 				if after, ok := strings.CutPrefix(sortField, "-"); ok {
 					q = q.Order(after + " DESC")
@@ -90,41 +90,50 @@ func sanitizeQuery(q *bun.SelectQuery, cols []string, filter, sortFields, status
 		q = q.Order("id ASC")
 	}
 
-	if status != "" {
-		q = q.Where("status = ?", status)
+	if qp.Status != "" {
+		q = q.Where("status = ?", qp.Status)
 	}
 
-	if limit > 0 {
-		q = q.Limit(limit)
+	if qp.Limit > 0 {
+		q = q.Limit(qp.Limit)
 
-		if page > 0 {
-			offset := (page - 1) * limit
+		if qp.Page > 0 {
+			offset := (qp.Page - 1) * qp.Limit
 			q = q.Offset(offset)
+		}
+	}
+
+	if qp.FilterExt != "" {
+		filters := strings.Split(qp.FilterExt, ",")
+		for _, f := range filters {
+			if len(strings.Split(f, "=")) == 2 {
+				q = buildFilterExtQuery(q, filters, qp.FilterExtOp, strings.Split(f, "="))
+			}
 		}
 	}
 
 	return q
 }
 
-func applyGlobalFilterExt(q *bun.SelectQuery, filterExtOp, filterExt string) *bun.SelectQuery {
-	if filterExt != "" {
-		filters := strings.Split(filterExt, ",")
-		for _, f := range filters {
-			kv := strings.Split(f, "=")
-
-			if len(kv) == 2 {
-				k, v := kv[0], kv[1]
-
-				if len(filters) > 1 && filterExtOp == "OR" {
-					q = q.WhereOr(k+" = ?", v)
-				} else {
-					q = q.Where(k+" = ?", v)
-				}
-			}
-		}
+func buildFilterExtQuery(q *bun.SelectQuery, filters []string, filterExtOp string, kv []string) *bun.SelectQuery {
+	operator := "where"
+	if len(filters) > 1 && filterExtOp == "OR" {
+		operator = "whereor"
 	}
 
-	return q
+	identifier := kv[0] + " = ?"
+	var literal any = kv[1]
+
+	if strings.Contains(kv[1], "||") {
+		identifier = kv[0] + " IN (?)"
+		literal = bun.In(strings.Split(kv[1], "||"))
+	}
+
+	if operator == "where" {
+		return q.Where(identifier, literal)
+	}
+
+	return q.WhereOr(identifier, literal)
 }
 
 func executeTransaction(ctx context.Context, trxFunc func(*bun.Tx) error) error {

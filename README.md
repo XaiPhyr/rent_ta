@@ -1,6 +1,6 @@
 # RDEV Boilerplate
 
-This repository provides a simplified boilerplate for a RESTful API built with [Golang](https://golang.org/), [Gin](https://github.com/gin-gonic/gin) (a web framework for Go), and [Bun](https://github.com/uptrace/bun) (a SQL ORM for PostgreSQL). This template is designed to get you up and running quickly with basic API functionality.
+This repository offers a streamlined boilerplate for creating a RESTful API using Golang, Gin (a web framework for Go), and Bun (a SQL ORM for PostgreSQL). The goal is to provide a simple, minimal-code setup that allows you to quickly launch an API with essential functionality.
 
 ## Features
 
@@ -8,7 +8,7 @@ This repository provides a simplified boilerplate for a RESTful API built with [
 - Gin for HTTP routing and middleware
 - Bun ORM for PostgreSQL integration
 - Basic database model setup
-- Example CRUD operations for a resource
+- Example **UPSERT**, **READ**, and **DELETE** operations for a resource
 - Environment-based configuration management using `yml` file
 
 ## Tech Stack
@@ -26,7 +26,7 @@ Before running the project, ensure you have the following installed:
 - [PostgreSQL](https://www.postgresql.org/download/)
 - [Git](https://git-scm.com/)
 - [Go Modules](https://blog.golang.org/using-go-modules)
-- (Optional): [Docker](https://www.docker.com/)
+- (Optional, coming soon): [Docker](https://www.docker.com/)
 
 ## Setup
 

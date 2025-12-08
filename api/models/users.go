@@ -60,11 +60,7 @@ func (m User) Upsert(ctx *gin.Context, user User) (int, User, error) {
 
 	setClause := parseSetClause(setClauseColumns)
 	err := executeTransaction(ctx, func(trx *bun.Tx) error {
-		_, err := trx.NewInsert().
-			Model(&user).
-			On("CONFLICT (uuid) DO UPDATE").
-			Set(setClause).
-			Exec(ctx)
+		_, err := trx.NewInsert().Model(&user).On("CONFLICT (uuid) DO UPDATE").Set(setClause).Exec(ctx)
 		return err
 	})
 
@@ -72,10 +68,15 @@ func (m User) Upsert(ctx *gin.Context, user User) (int, User, error) {
 	return httpStatus, user, err
 }
 
-func (m User) Read(qp QueryParams) (uuid string, res UserResults, err error) {
-	var coalesceColumns = []string{}
+func (m User) Read(qp QueryParams) (res UserResults, err error) {
+	var coalesceCols = []string{
+		"username",
+		"first_name",
+		"middle_name",
+		"last_name",
+	}
 
-	var allowedSortFields = map[string]bool{
+	var allowedFields = map[string]bool{
 		"id":         true,
 		"username":   true,
 		"email":      true,
@@ -85,15 +86,14 @@ func (m User) Read(qp QueryParams) (uuid string, res UserResults, err error) {
 	q := db.NewSelect()
 
 	if qp.UUID != "all" {
-		return qp.UUID, res, q.Model(&res.User).Where("uuid = ?", qp.UUID).Scan(qp.Ctx, &res.User)
+		return res, q.Model(&res.User).Where("uuid = ?", qp.UUID).Scan(qp.Ctx, &res.User)
 	}
 
 	q = q.Model(&res.Users)
-	q = sanitizeQuery(q, coalesceColumns, qp.Filter, qp.Sort, qp.Status, qp.Limit, qp.Page, allowedSortFields)
-	q = applyGlobalFilterExt(q, qp.FilterExtOp, qp.FilterExt)
+	q = sanitizeQuery(q, qp, coalesceCols, allowedFields)
 
 	res.Count, err = q.ScanAndCount(qp.Ctx)
-	return qp.UUID, res, err
+	return res, err
 }
 
 func (m User) Delete(ctx *gin.Context, uuid string) (deletedAt time.Time, msg string, err error) {
