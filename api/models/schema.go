@@ -22,6 +22,18 @@ type (
 		DeletedBy int64     `bun:"deleted_by,default:0" json:"deleted_by,omitzero"`
 	}
 
+	QueryParams struct {
+		UUID        string
+		Filter      string
+		FilterExtOp string
+		FilterExt   string
+		Sort        string
+		Status      string
+		Limit       int
+		Page        int
+		Ctx         *gin.Context
+	}
+
 	AuditLog struct {
 		bun.BaseModel `bun:"table:audit_logs,alias:au"`
 
@@ -39,18 +51,6 @@ type (
 		IPAddress        string    `bun:"ip_address" json:"ip_address"`
 		UserAgent        string    `bun:"user_agent" json:"user_agent"`
 		CreatedAt        time.Time `bun:"created_at,notnull,default:current_timestamp" json:"created_at,omitzero"`
-	}
-
-	QueryParams struct {
-		UUID        string
-		Filter      string
-		FilterExtOp string
-		FilterExt   string
-		Sort        string
-		Status      string
-		Limit       int
-		Page        int
-		Ctx         *gin.Context
 	}
 
 	UserResults struct {

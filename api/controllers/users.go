@@ -10,7 +10,7 @@ import (
 
 type UserController struct {
 	AppController
-	u models.User
+	m models.User
 }
 
 func (c UserController) InitUserController(router *gin.Engine) {
@@ -28,7 +28,7 @@ func (c UserController) Upsert(ctx *gin.Context) {
 		return
 	}
 
-	httpStatus, res, err := c.u.Upsert(ctx, *form)
+	httpStatus, res, err := c.m.Upsert(ctx, *form)
 
 	if err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
@@ -39,7 +39,7 @@ func (c UserController) Upsert(ctx *gin.Context) {
 }
 
 func (c UserController) Read(ctx *gin.Context) {
-	res, err := c.u.Read(c.sanitizeCtx(ctx))
+	res, err := c.m.Read(c.sanitizeCtx(ctx))
 
 	if err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
@@ -54,7 +54,7 @@ func (c UserController) Read(ctx *gin.Context) {
 }
 
 func (c UserController) Delete(ctx *gin.Context) {
-	deletedAt, msg, err := c.u.Delete(ctx, ctx.Param("uuid"))
+	deletedAt, msg, err := c.m.Delete(ctx, ctx.Param("uuid"))
 
 	if err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
