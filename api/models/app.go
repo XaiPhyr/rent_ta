@@ -39,7 +39,7 @@ func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSor
 			}
 		}
 	} else {
-		q = q.Order("id ASC")
+		q = q.Order("created_at ASC")
 	}
 
 	if qp.Status != "" {
@@ -68,11 +68,6 @@ func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSor
 }
 
 func buildFilterExtQuery(q *bun.SelectQuery, filters []string, filterExtOp string, kv []string) *bun.SelectQuery {
-	operator := "where"
-	if len(filters) > 1 && filterExtOp == "OR" {
-		operator = "whereor"
-	}
-
 	identifier := kv[0] + " = ?"
 	var literal any = kv[1]
 
@@ -81,11 +76,11 @@ func buildFilterExtQuery(q *bun.SelectQuery, filters []string, filterExtOp strin
 		literal = bun.In(strings.Split(kv[1], "||"))
 	}
 
-	if operator == "where" {
-		return q.Where(identifier, literal)
+	if len(filters) > 1 && filterExtOp == "OR" {
+		return q.WhereOr(identifier, literal)
 	}
 
-	return q.WhereOr(identifier, literal)
+	return q.Where(identifier, literal)
 }
 
 func executeTransaction(ctx context.Context, trxFunc func(*bun.Tx) error) error {
@@ -175,5 +170,9 @@ func parseSetClause(cols []string) string {
 
 func validateField(allowedSortFields map[string]bool, sortField string) bool {
 	after, _ := strings.CutPrefix(sortField, "-")
+
+	allowedSortFields["id"] = true
+	allowedSortFields["created_at"] = true
+
 	return allowedSortFields[after]
 }

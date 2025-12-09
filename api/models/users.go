@@ -44,7 +44,7 @@ func (m User) Upsert(ctx *gin.Context, item User) (int, User, error) {
 
 func (m User) Read(qp QueryParams) (res UserResults, err error) {
 	var coalesceCols = []string{"username", "first_name", "middle_name", "last_name"}
-	var allowedSortFields = map[string]bool{"id": true, "username": true, "email": true, "created_at": true}
+	var allowedSortFields = map[string]bool{"username": true, "email": true}
 
 	q := db.NewSelect()
 
