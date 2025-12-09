@@ -49,7 +49,13 @@ func (m User) Read(qp QueryParams) (res UserResults, err error) {
 	q := db.NewSelect()
 
 	if qp.UUID != "all" {
-		return res, q.Model(&res.User).Where("uuid = ?", qp.UUID).Scan(qp.Ctx)
+		err = q.Model(&res.User).Where("u.uuid = ?", qp.UUID).Scan(qp.Ctx)
+
+		if permissions, err := getPermissions(qp.Ctx, qp.UUID); err == nil {
+			res.User.Permissions = permissions
+		}
+
+		return res, err
 	}
 
 	q = sanitizeQuery(q.Model(&res.Users), qp, coalesceCols, allowedSortFields)

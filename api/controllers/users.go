@@ -16,10 +16,10 @@ type UserController struct {
 func (c UserController) InitUserController(router *gin.Engine) {
 	r := router.Group(fmt.Sprintf("/%s/user", apiVersion))
 
-	r.POST("", c.mw.Authenticate, c.Upsert)
-	r.GET("/:uuid", c.mw.Authenticate, c.Read)
-	r.DELETE("/:uuid", c.mw.Authenticate, c.Delete)
-	r.PATCH("/:uuid", c.mw.Authenticate, c.UpdateStatus)
+	r.POST("", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "create", "update"), c.Upsert)
+	r.GET("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "read"), c.Read)
+	r.DELETE("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "delete"), c.Delete)
+	r.PATCH("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "update_status"), c.UpdateStatus)
 }
 
 func (c UserController) Upsert(ctx *gin.Context) {

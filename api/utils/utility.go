@@ -113,3 +113,11 @@ func InitDB() *bun.DB {
 
 	return db
 }
+
+func GetPermissions() *bun.SelectQuery {
+	return db.NewSelect().
+		TableExpr("users AS u").
+		Join("LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.deleted_at IS NULL AND ur.status = 'O'").
+		Join("LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id AND rp.deleted_at IS NULL AND rp.status = 'O'").
+		Join("LEFT JOIN permissions p ON p.id = rp.permission_id AND p.deleted_at IS NULL AND p.status = 'O'")
+}

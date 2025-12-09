@@ -213,3 +213,21 @@ func validateField(allowedSortFields map[string]bool, sortField string) bool {
 
 	return allowedSortFields[after]
 }
+
+func getPermissions(ctx *gin.Context, uuid string) ([]string, error) {
+	var perms struct {
+		Permissions []string `bun:"permissions"`
+	}
+
+	q := utils.GetPermissions().
+		ColumnExpr("JSON_ARRAYAGG(p.name) AS permissions").
+		Where("u.uuid = ?", uuid)
+
+	err := q.Scan(ctx, &perms)
+
+	if len(perms.Permissions) == 0 {
+		return nil, err
+	}
+
+	return perms.Permissions, nil
+}

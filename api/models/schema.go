@@ -76,6 +76,7 @@ type (
 		Metadata   *map[string]any `bun:"metadata,type:jsonb,default:null" json:"metadata"`
 		IsAdmin    bool            `bun:"is_admin" json:"is_admin"`
 
+		Permissions []string `bun:"-" json:"permissions,omitempty"`
 		AppModel
 	}
 
