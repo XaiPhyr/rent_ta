@@ -9,7 +9,6 @@ import (
 
 type (
 	AppModel struct {
-		ID        int64     `bun:"id,pk,autoincrement" json:"id"`
 		Active    bool      `bun:"active,default:true" json:"active"`
 		Status    string    `bun:"status,default:O" json:"status"`
 		Flag      string    `bun:"flag,nullzero,default:null" json:"flag,omitempty"`
@@ -61,8 +60,8 @@ type (
 
 	User struct {
 		bun.BaseModel `bun:"table:users,alias:u"`
-		AppModel
 
+		ID         int64           `bun:"id,pk,autoincrement" json:"id"`
 		Username   string          `bun:"username" json:"username"`
 		Password   string          `bun:"password" json:"-"`
 		Email      string          `bun:"email,unique" json:"email"`
@@ -75,5 +74,27 @@ type (
 		LastLogin  time.Time       `bun:"last_login,nullzero,default:null" json:"last_login,omitzero"`
 		Metadata   *map[string]any `bun:"metadata,type:jsonb,default:null" json:"metadata"`
 		IsAdmin    bool            `bun:"is_admin" json:"is_admin"`
+
+		AppModel
 	}
+
+	RoleResults struct {
+		Role  Role
+		Roles []Role
+		Count int
+	}
+
+	Role struct {
+		bun.BaseModel `bun:"table:roles,alias:r"`
+
+		ID          int64  `bun:"id,pk,autoincrement" json:"id"`
+		Name        string `bun:"name" json:"name"`
+		Description string `bun:"description" json:"description"`
+
+		AppModel
+	}
+
+	//@todo user_roles
+	//@todo role_permissions
+	//@todo permissions
 )
