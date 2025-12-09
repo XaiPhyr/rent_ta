@@ -28,6 +28,7 @@ type (
 		FilterExt   string
 		Sort        string
 		Status      string
+		Deleted     bool
 		Limit       int
 		Page        int
 		Ctx         *gin.Context

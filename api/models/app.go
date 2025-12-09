@@ -42,7 +42,11 @@ func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSor
 		q = q.Order("created_at ASC")
 	}
 
-	if qp.Status != "" {
+	if qp.Status != "A" {
+		if qp.Status == "" {
+			qp.Status = "O"
+		}
+
 		q = q.Where("status = ?", qp.Status)
 	}
 
@@ -64,7 +68,11 @@ func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSor
 		}
 	}
 
-	q = q.Where("deleted_at ISNULL")
+	if qp.Deleted {
+		q = q.Where("deleted_at IS NOT NULL")
+	} else {
+		q = q.Where("deleted_at IS NULL")
+	}
 
 	return q
 }

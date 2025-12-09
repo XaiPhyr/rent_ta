@@ -39,6 +39,8 @@ func (c *AppController) sanitizeCtx(ctx *gin.Context) models.QueryParams {
 		filterExtOp = "AND"
 	}
 
+	isDeleted, _ := strconv.ParseBool(ctx.Query("deleted"))
+
 	return models.QueryParams{
 		UUID:        ctx.Param("uuid"),
 		Sort:        ctx.Query("sort"),
@@ -46,6 +48,7 @@ func (c *AppController) sanitizeCtx(ctx *gin.Context) models.QueryParams {
 		Filter:      ctx.Query("filter"),
 		FilterExtOp: filterExtOp,
 		FilterExt:   filterExt,
+		Deleted:     isDeleted,
 		Limit:       limit,
 		Page:        page,
 		Ctx:         ctx,
