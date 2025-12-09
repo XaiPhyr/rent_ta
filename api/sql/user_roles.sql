@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS user_roles (
   CONSTRAINT unique_user_role UNIQUE (user_id, role_id, deleted_at)
 );
 
-CREATE UNIQUE INDEX unique_user_role_active ON user_roles(user_id, role_id, deleted_at)
+CREATE UNIQUE INDEX unique_user_role_active ON user_roles(user_id, role_id)
 WHERE deleted_at IS NULL;
