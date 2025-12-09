@@ -63,3 +63,10 @@ func (m User) Delete(ctx *gin.Context, uuid string) (deletedAt time.Time, msg st
 	go auditLog(ctx, nil, map[string]string{"deleted_at": deletedAt.String()}, id, "user", "DELETE", err)
 	return
 }
+
+func (m User) UpdateStatus(ctx *gin.Context, uuid string) (status, msg string, err error) {
+	id, status, msg, err := updateStatus(ctx, "users", uuid)
+
+	go auditLog(ctx, nil, map[string]string{"status": status}, id, "user", "PATCH", err)
+	return
+}

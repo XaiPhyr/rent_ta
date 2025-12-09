@@ -161,6 +161,33 @@ func softDelete(ctx *gin.Context, tableName, uuid string) (id int64, deletedAt t
 	return
 }
 
+func updateStatus(ctx *gin.Context, tableName, uuid string) (id int64, status, msg string, err error) {
+	var temp struct {
+		ID     int64  `bun:"id"`
+		Status string `bun:"status" json:"status"`
+	}
+
+	err = executeTransaction(ctx, func(trx *bun.Tx) error {
+		_, err := trx.NewUpdate().
+			Table(tableName).
+			Where("uuid = ?", uuid).
+			Set("status = CASE WHEN status = 'O' THEN 'V' ELSE 'O' END").
+			Returning("status, id").
+			Exec(ctx, &temp)
+		return err
+	})
+
+	id = temp.ID
+	status = "O"
+	msg = "status restored successfully"
+	if temp.Status == "V" {
+		status = temp.Status
+		msg = "status archived successfully"
+	}
+
+	return
+}
+
 func parseSetClause(cols []string) string {
 	setClauses := make([]string, 0, len(cols))
 	for _, col := range cols {

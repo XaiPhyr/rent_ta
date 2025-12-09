@@ -19,6 +19,7 @@ func (c RoleController) InitRoleController(router *gin.Engine) {
 	r.POST("", c.mw.Authenticate, c.Upsert)
 	r.GET("/:uuid", c.mw.Authenticate, c.Read)
 	r.DELETE("/:uuid", c.mw.Authenticate, c.Delete)
+	r.PATCH("/:uuid", c.mw.Authenticate, c.UpdateStatus)
 }
 
 func (c RoleController) Upsert(ctx *gin.Context) {
@@ -62,4 +63,15 @@ func (c RoleController) Delete(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"deleted_at": deletedAt.String(), "message": msg})
+}
+
+func (c RoleController) UpdateStatus(ctx *gin.Context) {
+	status, msg, err := c.m.UpdateStatus(ctx, ctx.Param("uuid"))
+
+	if err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": status, "message": msg})
 }
