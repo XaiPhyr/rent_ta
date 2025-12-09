@@ -64,6 +64,8 @@ func sanitizeQuery(q *bun.SelectQuery, qp QueryParams, cols []string, allowedSor
 		}
 	}
 
+	q = q.Where("deleted_at ISNULL")
+
 	return q
 }
 
