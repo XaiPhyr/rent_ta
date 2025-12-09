@@ -111,6 +111,22 @@ type (
 		AppModel
 	}
 
+	RolePermissionResults struct {
+		RolePermission  RolePermission
+		RolePermissions []RolePermission
+		Count           int
+	}
+
+	RolePermission struct {
+		bun.BaseModel `bun:"table:role_permissions,alias:rp"`
+
+		ID           int64 `bun:"id,pk,autoincrement" json:"id"`
+		RoleID       int64 `bun:"role_id" json:"role_id"`
+		PermissionID int64 `bun:"permission_id" json:"permission_id"`
+
+		AppModel
+	}
+
 	PermissionResults struct {
 		Permission  Permission
 		Permissions []Permission
@@ -126,7 +142,4 @@ type (
 
 		AppModel
 	}
-
-	//@todo user_roles
-	//@todo role_permissions
 )
