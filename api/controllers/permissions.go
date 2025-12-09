@@ -1,0 +1,65 @@
+package controllers
+
+import (
+	"api/models"
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type PermissionController struct {
+	AppController
+	m models.Permission
+}
+
+func (c PermissionController) InitPermissionController(router *gin.Engine) {
+	r := router.Group(fmt.Sprintf("/%s/permission", apiVersion))
+
+	r.POST("", c.mw.Authenticate, c.Upsert)
+	r.GET("/:uuid", c.mw.Authenticate, c.Read)
+	r.DELETE("/:uuid", c.mw.Authenticate, c.Delete)
+}
+
+func (c PermissionController) Upsert(ctx *gin.Context) {
+	var form *models.Permission
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	httpStatus, res, err := c.m.Upsert(ctx, *form)
+
+	if err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	ctx.JSON(httpStatus, gin.H{"data": res})
+}
+
+func (c PermissionController) Read(ctx *gin.Context) {
+	res, err := c.m.Read(c.sanitizeCtx(ctx))
+
+	if err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	if ctx.Param("uuid") != "all" {
+		ctx.JSON(http.StatusOK, gin.H{"data": res.Permission})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"total": res.Count, "data": res.Permissions})
+	}
+}
+
+func (c PermissionController) Delete(ctx *gin.Context) {
+	deletedAt, msg, err := c.m.Delete(ctx, ctx.Param("uuid"))
+
+	if err != nil {
+		c.handleError(ctx, err, c.cleanErr(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"deleted_at": deletedAt.String(), "message": msg})
+}

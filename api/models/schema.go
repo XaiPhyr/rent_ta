@@ -94,7 +94,22 @@ type (
 		AppModel
 	}
 
+	PermissionResults struct {
+		Permission  Permission
+		Permissions []Permission
+		Count       int
+	}
+
+	Permission struct {
+		bun.BaseModel `bun:"table:permissions,alias:p"`
+
+		ID          int64  `bun:"id,pk,autoincrement" json:"id"`
+		Name        string `bun:"name" json:"name"`
+		Description string `bun:"description" json:"description"`
+
+		AppModel
+	}
+
 	//@todo user_roles
 	//@todo role_permissions
-	//@todo permissions
 )

@@ -12,4 +12,7 @@ func InitRouters(router *gin.Engine) {
 
 	var role = controllers.RoleController{}
 	role.InitRoleController(router)
+
+	var permission = controllers.PermissionController{}
+	permission.InitPermissionController(router)
 }
