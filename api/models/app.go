@@ -219,11 +219,7 @@ func getPermissions(ctx *gin.Context, uuid string) ([]string, error) {
 		Permissions []string `bun:"permissions"`
 	}
 
-	q := utils.GetPermissions().
-		ColumnExpr("JSON_ARRAYAGG(p.name) AS permissions").
-		Where("u.uuid = ?", uuid)
-
-	err := q.Scan(ctx, &perms)
+	err := utils.GetPermissions(uuid, "", "", ctx, &perms)
 
 	if len(perms.Permissions) == 0 {
 		return nil, err

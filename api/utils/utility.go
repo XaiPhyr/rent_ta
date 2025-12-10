@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -114,10 +115,25 @@ func InitDB() *bun.DB {
 	return db
 }
 
-func GetPermissions() *bun.SelectQuery {
-	return db.NewSelect().
-		TableExpr("users AS u").
+func GetPermissions(uuid, column, group string, ctx *gin.Context, dest ...any) error {
+	q := db.NewSelect().TableExpr("users AS u").
+		ColumnExpr("JSON_ARRAYAGG(p.name) AS permissions").
 		Join("LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.deleted_at IS NULL AND ur.status = 'O'").
 		Join("LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id AND rp.deleted_at IS NULL AND rp.status = 'O'").
-		Join("LEFT JOIN permissions p ON p.id = rp.permission_id AND p.deleted_at IS NULL AND p.status = 'O'")
+		Join("LEFT JOIN permissions p ON p.id = rp.permission_id AND p.deleted_at IS NULL AND p.status = 'O'").
+		WhereGroup("AND", func(sq *bun.SelectQuery) *bun.SelectQuery {
+			return sq.Where("u.uuid = ?", uuid).
+				Where("u.status = 'O'").
+				Where("u.deleted_at IS NULL")
+		})
+
+	if column != "" {
+		q = q.Column(column)
+	}
+
+	if group != "" {
+		q = q.Group(group)
+	}
+
+	return q.Scan(ctx, &dest)
 }
