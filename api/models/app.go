@@ -219,7 +219,7 @@ func getPermissions(ctx *gin.Context, uuid string) ([]string, error) {
 		Permissions []string `bun:"permissions"`
 	}
 
-	err := utils.GetPermissions(uuid, "", "", ctx, &perms)
+	err := utils.GetPermissions(nil, uuid, ctx, &perms)
 
 	if len(perms.Permissions) == 0 {
 		return nil, err

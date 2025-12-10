@@ -115,7 +115,7 @@ func InitDB() *bun.DB {
 	return db
 }
 
-func GetPermissions(uuid, column, group string, ctx *gin.Context, dest ...any) error {
+func GetPermissions(fn func(*bun.SelectQuery) *bun.SelectQuery, uuid string, ctx *gin.Context, dest ...any) error {
 	q := db.NewSelect().TableExpr("users AS u").
 		ColumnExpr("JSON_ARRAYAGG(p.name) AS permissions").
 		Join("LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.deleted_at IS NULL AND ur.status = 'O'").
@@ -127,12 +127,8 @@ func GetPermissions(uuid, column, group string, ctx *gin.Context, dest ...any) e
 				Where("u.deleted_at IS NULL")
 		})
 
-	if column != "" {
-		q = q.Column(column)
-	}
-
-	if group != "" {
-		q = q.Group(group)
+	if fn != nil {
+		q = fn(q)
 	}
 
 	return q.Scan(ctx, &dest)

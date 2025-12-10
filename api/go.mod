@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/gin-gonic/gin v1.11.0
+	golang.org/x/time v0.12.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -40,7 +41,6 @@ require (
 )
 
 require (
-	github.com/gorilla/websocket v1.5.3
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect

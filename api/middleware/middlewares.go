@@ -8,9 +8,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uptrace/bun"
+	"golang.org/x/time/rate"
 )
 
 type Middleware struct{}
+
+var limiter = rate.NewLimiter(1, 5)
 
 func SetLoggers(router *gin.Engine) {
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -31,9 +35,10 @@ func SetLoggers(router *gin.Engine) {
 }
 
 func (m Middleware) Authenticate(ctx *gin.Context) {
-	// @todo JWT LOGIC
 	ctx.Set("userId", 1)
-	ctx.Next()
+	m.rateLimiter(ctx)
+
+	// @todo JWT LOGIC
 }
 
 func (m Middleware) CheckPermission(module string, perm ...string) gin.HandlerFunc {
@@ -48,7 +53,9 @@ func (m Middleware) CheckPermission(module string, perm ...string) gin.HandlerFu
 			Permissions []string `bun:"permissions" json:"permissions"`
 		}
 
-		err := utils.GetPermissions(ctx.GetHeader("UserUUID"), "u.*", "u.id", ctx, &userPerm)
+		err := utils.GetPermissions(func(sq *bun.SelectQuery) *bun.SelectQuery {
+			return sq.Column("u.*").Group("u.id")
+		}, ctx.GetHeader("UserUUID"), ctx, &userPerm)
 
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "User does not exist.", "details": err.Error()})
@@ -57,7 +64,7 @@ func (m Middleware) CheckPermission(module string, perm ...string) gin.HandlerFu
 		}
 
 		if !m.checkPerm(items, userPerm.Permissions, userPerm.IsAdmin) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You do not have permission.", "user": userPerm})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You do not have permission.", "data": userPerm})
 			ctx.Abort()
 			return
 		}
@@ -83,4 +90,14 @@ func (m Middleware) checkPerm(items, permissions []string, isAdmin bool) bool {
 	}
 
 	return false
+}
+
+func (m Middleware) rateLimiter(ctx *gin.Context) {
+	if !limiter.Allow() {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many requests"})
+		ctx.Abort()
+		return
+	}
+
+	ctx.Next()
 }

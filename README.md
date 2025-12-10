@@ -10,6 +10,8 @@ This repository offers a streamlined boilerplate for creating a RESTful API usin
 - Basic database model setup
 - Example **UPSERT**, **READ**, and **DELETE** operations for a resource
 - Environment-based configuration management using `yml` file
+- **Role-Based Access Control (RBAC)** for user roles and permissions management
+- Rate limiting middleware to control request throughput per client
 
 ## Tech Stack
 
@@ -51,6 +53,7 @@ CREATE DATABASE your_db_name;
 ```
 
 ### 4. Configure config.yml file
+
 remove .example on conf/config.yml.example
 
 ```yml
@@ -67,6 +70,7 @@ database:
 ```
 
 ### 5. SQL tables
+
 SQL files can be found on sql/
 
 ### 6. Run the API
