@@ -27,4 +27,7 @@ func InitRouters(router *gin.Engine) {
 
 	var user_group = controllers.UserGroupController{}
 	user_group.InitUserGroupController(router)
+
+	var group_permission = controllers.GroupPermissionController{}
+	group_permission.InitGroupPermissionController(router)
 }
