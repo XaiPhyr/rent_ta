@@ -143,6 +143,7 @@ func auditLog(ctx *gin.Context, beforeDataChange, afterDataChange any, moduleId 
 	}
 }
 
+// @todo combine functions softDelete updateStatus into one generic
 func softDelete(ctx *gin.Context, tableName, uuid string) (id int64, deletedAt time.Time, msg string, err error) {
 	var temp struct {
 		ID        int64     `bun:"id"`
