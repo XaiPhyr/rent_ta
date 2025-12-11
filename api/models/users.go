@@ -7,6 +7,35 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type (
+	UserResults struct {
+		User  User
+		Users []User
+		Count int
+	}
+
+	User struct {
+		bun.BaseModel `bun:"table:users,alias:u"`
+
+		ID         int64           `bun:"id,pk,autoincrement" json:"id"`
+		Username   string          `bun:"username" json:"username"`
+		Password   string          `bun:"password" json:"-"`
+		Email      string          `bun:"email,unique" json:"email"`
+		FirstName  *string         `bun:"first_name,nullzero,default:null" json:"first_name"`
+		MiddleName *string         `bun:"middle_name,nullzero,default:null" json:"middle_name"`
+		LastName   *string         `bun:"last_name,nullzero,default:null" json:"last_name"`
+		Mobile     *string         `bun:"mobile,unique,nullzero,default:null" json:"mobile"`
+		Address    *map[string]any `bun:"address,type:jsonb" json:"address"`
+		Optin      bool            `bun:"optin,default:false" json:"optin"`
+		LastLogin  time.Time       `bun:"last_login,nullzero,default:null" json:"last_login,omitzero"`
+		Metadata   *map[string]any `bun:"metadata,type:jsonb,default:null" json:"metadata"`
+		IsAdmin    bool            `bun:"is_admin" json:"is_admin"`
+
+		Permissions []string `bun:"-" json:"permissions,omitempty"`
+		AppModel
+	}
+)
+
 func (m User) Upsert(ctx *gin.Context, item User) (int, User, error) {
 	var oldData *User
 	httpStatus, action := 201, "POST"

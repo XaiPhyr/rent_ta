@@ -7,6 +7,24 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type (
+	RoleResults struct {
+		Role  Role
+		Roles []Role
+		Count int
+	}
+
+	Role struct {
+		bun.BaseModel `bun:"table:roles,alias:r"`
+
+		ID          int64  `bun:"id,pk,autoincrement" json:"id"`
+		Name        string `bun:"name" json:"name"`
+		Description string `bun:"description" json:"description"`
+
+		AppModel
+	}
+)
+
 func (m Role) Upsert(ctx *gin.Context, item Role) (int, Role, error) {
 	var oldData *Role
 	httpStatus, action := 201, "POST"

@@ -7,6 +7,24 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type (
+	UserRoleResults struct {
+		UserRole  UserRole
+		UserRoles []UserRole
+		Count     int
+	}
+
+	UserRole struct {
+		bun.BaseModel `bun:"table:user_roles,alias:ur"`
+
+		ID     int64 `bun:"id,pk,autoincrement" json:"id"`
+		UserID int64 `bun:"user_id" json:"user_id"`
+		RoleID int64 `bun:"role_id" json:"role_id"`
+
+		AppModel
+	}
+)
+
 func (m UserRole) Upsert(ctx *gin.Context, item UserRole) (int, UserRole, error) {
 	var oldData *UserRole
 	httpStatus, action := 201, "POST"

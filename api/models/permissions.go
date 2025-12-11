@@ -7,6 +7,24 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type (
+	PermissionResults struct {
+		Permission  Permission
+		Permissions []Permission
+		Count       int
+	}
+
+	Permission struct {
+		bun.BaseModel `bun:"table:permissions,alias:p"`
+
+		ID          int64  `bun:"id,pk,autoincrement" json:"id"`
+		Name        string `bun:"name" json:"name"`
+		Description string `bun:"description" json:"description"`
+
+		AppModel
+	}
+)
+
 func (m Permission) Upsert(ctx *gin.Context, item Permission) (int, Permission, error) {
 	var oldData *Permission
 	httpStatus, action := 201, "POST"

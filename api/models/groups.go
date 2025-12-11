@@ -7,6 +7,24 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type (
+	GroupResults struct {
+		Group  Group
+		Groups []Group
+		Count  int
+	}
+
+	Group struct {
+		bun.BaseModel `bun:"table:groups,alias:g"`
+
+		ID          int64  `bun:"id,pk,autoincrement" json:"id"`
+		Name        string `bun:"name" json:"name"`
+		Description string `bun:"description" json:"description"`
+
+		AppModel
+	}
+)
+
 func (m Group) Upsert(ctx *gin.Context, item Group) (int, Group, error) {
 	var oldData *Group
 	httpStatus, action := 201, "POST"
