@@ -24,4 +24,7 @@ func InitRouters(router *gin.Engine) {
 
 	var group = controllers.GroupController{}
 	group.InitGroupController(router)
+
+	var user_group = controllers.UserGroupController{}
+	user_group.InitUserGroupController(router)
 }
