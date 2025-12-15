@@ -86,8 +86,8 @@ func (m User) Read(qp QueryParams) (res UserResults, err error) {
 		}
 
 		utils.GetPermissions(func(sq *bun.SelectQuery) *bun.SelectQuery {
-			return sq.Column("u.*").Group("u.id")
-		}, qp.UUID, qp.Ctx, &userPerm)
+			return sq.Where("u.uuid = ?", qp.UUID)
+		}, qp.Ctx, &userPerm)
 
 		res.User = userPerm.User
 		res.User.Permissions = userPerm.Permissions

@@ -61,8 +61,8 @@ func (m Middleware) CheckPermission(module string, perm ...string) gin.HandlerFu
 		}
 
 		utils.GetPermissions(func(sq *bun.SelectQuery) *bun.SelectQuery {
-			return sq.Column("u.*").Group("u.id")
-		}, ctx.GetHeader("UserUUID"), ctx, &userPerm)
+			return sq.Where("u.uuid = ?", ctx.GetHeader("UserUUID"))
+		}, ctx, &userPerm)
 
 		if userPerm.ID == 0 {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "Your account has either been deleted or archived; please contact support for more information or assistance."})

@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,7 +21,7 @@ type (
 	Tokens struct {
 		Username     string           `json:"username"`
 		UUID         string           `json:"uuid"`
-		Token        string           `json:"token"`
+		AccessToken  string           `json:"access_token"`
 		RefreshToken string           `json:"refresh_token"`
 		ExpiresAt    *jwt.NumericDate `json:"expires_at"`
 	}
@@ -50,7 +51,7 @@ func GenerateJWT(uuid, username string) (*Tokens, error) {
 	res := &Tokens{
 		UUID:         uuid,
 		Username:     username,
-		Token:        token,
+		AccessToken:  token,
 		RefreshToken: refreshToken,
 		ExpiresAt:    jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
 	}
@@ -122,6 +123,12 @@ func HandlePassword(action, password, hashedPassword string) (string, error) {
 	default:
 		return "", errors.New("invalid action, must be 'hash' or 'check'")
 	}
+}
+
+func SetCooke(ctx *gin.Context, jwt *Tokens) {
+	ctx.SetCookie("access_token", jwt.AccessToken, 900, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", jwt.RefreshToken, 3600, "/", "localhost", false, true)
+	ctx.SetCookie("uuid", jwt.UUID, 0, "/", "localhost", false, true)
 }
 
 func registerToken(duration time.Duration, uuid, username string) (claims *JwtClaim) {

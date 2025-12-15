@@ -32,7 +32,8 @@ func (c AuthenticationController) Login(ctx *gin.Context) {
 
 	if u, err := c.u.Login(ctx, form.Username); err == nil {
 		if jwt, err := utils.GenerateJWT(u.UUID, u.Username); err == nil {
-			ctx.JSON(http.StatusOK, gin.H{"success": "Login successfully.", "data": jwt})
+			utils.SetCooke(ctx, jwt)
+			ctx.JSON(http.StatusOK, gin.H{"success": "Login successfully.", "data": u})
 			return
 		}
 	}

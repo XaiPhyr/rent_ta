@@ -5,18 +5,19 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func GetPermissions(fn func(*bun.SelectQuery) *bun.SelectQuery, uuid string, ctx *gin.Context, dest ...any) error {
+func GetPermissions(fn func(*bun.SelectQuery) *bun.SelectQuery, ctx *gin.Context, dest ...any) error {
 	q := db.NewSelect().
 		With("UserPermissions", userPermissionsUnion()).
 		TableExpr("users AS u").
+		Column("u.*").
 		ColumnExpr("JSON_ARRAYAGG(p.name) AS permissions").
 		Join(`LEFT JOIN "UserPermissions" up ON up.user_id = u.id`).
 		Join("LEFT JOIN permissions p ON p.id = up.permission_id").
 		WhereGroup("AND", func(sq *bun.SelectQuery) *bun.SelectQuery {
-			return sq.Where("u.uuid = ?", uuid).
-				Where("u.status = 'O'").
+			return sq.Where("u.status = 'O'").
 				Where("u.deleted_at IS NULL")
-		})
+		}).
+		Group("u.id")
 
 	if fn != nil {
 		q = fn(q)
