@@ -33,4 +33,7 @@ func InitRouters(router *gin.Engine) {
 
 	var group_permission = controllers.GroupPermissionController{}
 	group_permission.InitGroupPermissionController(router)
+
+	var space = controllers.SpaceController{}
+	space.InitSpaceController(router)
 }

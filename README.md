@@ -1,18 +1,6 @@
-# RDEV Boilerplate
+# RENT TA
 
-This repository offers a streamlined boilerplate for creating a RESTful API using Golang, Gin (a web framework for Go), and Bun (a SQL ORM for PostgreSQL). The goal is to provide a simple, minimal-code setup that allows you to quickly launch an API with essential functionality.
-
-## Features
-
-- Simple REST API structure
-- Gin for HTTP routing and middleware
-- Bun ORM for PostgreSQL integration
-- Basic database model setup
-- Example **UPSERT**, **READ**, and **DELETE** operations for a resource
-- Environment-based configuration management using `yml` file
-- **Role-Based Access Control (RBAC)** for user roles and permissions management
-  - Includes **Group Access Control** for user grouping and role-specific permissions
-- Rate limiting middleware to control request throughput per client
+Connect with available warehouse and open gym spaces near you and book them instantly for short- or long-term use. Our platform makes it easy to find storage, or covered court in one place.
 
 ## Tech Stack
 
@@ -36,8 +24,8 @@ Before running the project, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/XaiPhyr/rdev_boilerplate
-cd rdev_boilerplate
+git clone https://github.com/XaiPhyr/rent_ta
+cd rent_ta
 ```
 
 ### 2. Install Dependencies

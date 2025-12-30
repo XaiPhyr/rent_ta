@@ -8,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserGroupController struct {
+type SpaceController struct {
 	AppController
-	m models.UserGroup
+	m models.Space
 }
 
-func (c UserGroupController) InitUserGroupController(router *gin.Engine) {
-	r := router.Group(fmt.Sprintf("/%s/user_group", apiVersion))
+func (c SpaceController) InitSpaceController(router *gin.Engine) {
+	r := router.Group(fmt.Sprintf("/%s/space", apiVersion))
 
 	r.POST("", c.mw.Authenticate, c.Upsert)
 	r.GET("/:uuid", c.mw.Authenticate, c.Read)
@@ -22,8 +22,8 @@ func (c UserGroupController) InitUserGroupController(router *gin.Engine) {
 	r.PATCH("/:uuid", c.mw.Authenticate, c.UpdateStatus)
 }
 
-func (c UserGroupController) Upsert(ctx *gin.Context) {
-	var form *models.UserGroup
+func (c SpaceController) Upsert(ctx *gin.Context) {
+	var form *models.Space
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		c.handleError(ctx, err, c.cleanErr(err))
 		return
@@ -39,7 +39,7 @@ func (c UserGroupController) Upsert(ctx *gin.Context) {
 	ctx.JSON(httpStatus, gin.H{"data": res})
 }
 
-func (c UserGroupController) Read(ctx *gin.Context) {
+func (c SpaceController) Read(ctx *gin.Context) {
 	res, err := c.m.Read(c.sanitizeCtx(ctx))
 
 	if err != nil {
@@ -47,16 +47,16 @@ func (c UserGroupController) Read(ctx *gin.Context) {
 		return
 	}
 
-	data := gin.H{"total": res.Count, "data": res.UserGroups}
+	data := gin.H{"total": res.Count, "data": res.Spaces}
 
 	if ctx.Param("uuid") != "all" {
-		data = gin.H{"data": res.UserGroup}
+		data = gin.H{"data": res.Space}
 	}
 
 	ctx.JSON(http.StatusOK, data)
 }
 
-func (c UserGroupController) Delete(ctx *gin.Context) {
+func (c SpaceController) Delete(ctx *gin.Context) {
 	deletedAt, msg, err := c.m.Delete(ctx, ctx.Param("uuid"))
 
 	if err != nil {
@@ -67,7 +67,7 @@ func (c UserGroupController) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"deleted_at": deletedAt.String(), "message": msg})
 }
 
-func (c UserGroupController) UpdateStatus(ctx *gin.Context) {
+func (c SpaceController) UpdateStatus(ctx *gin.Context) {
 	status, msg, err := c.m.UpdateStatus(ctx, ctx.Param("uuid"))
 
 	if err != nil {

@@ -17,7 +17,8 @@ func (c UserController) InitUserController(router *gin.Engine) {
 	r := router.Group(fmt.Sprintf("/%s/user", apiVersion))
 
 	r.POST("", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "edit"), c.Upsert)
-	r.GET("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "read"), c.Read)
+	// r.GET("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "read"), c.Read)
+	r.GET("/:uuid", c.mw.Authenticate, c.Read)
 	r.DELETE("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "delete"), c.Delete)
 	r.PATCH("/:uuid", c.mw.Authenticate, c.mw.CheckPermission("user", "manage", "update_status"), c.UpdateStatus)
 }
@@ -47,11 +48,13 @@ func (c UserController) Read(ctx *gin.Context) {
 		return
 	}
 
+	data := gin.H{"total": res.Count, "data": res.Users}
+
 	if ctx.Param("uuid") != "all" {
-		ctx.JSON(http.StatusOK, gin.H{"data": res.User})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"total": res.Count, "data": res.Users})
+		data = gin.H{"data": res.User}
 	}
+
+	ctx.JSON(http.StatusOK, data)
 }
 
 func (c UserController) Delete(ctx *gin.Context) {
