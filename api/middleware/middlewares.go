@@ -37,12 +37,12 @@ func SetLoggers(router *gin.Engine) {
 func (m Middleware) Authenticate(ctx *gin.Context) {
 	m.rateLimiter(ctx)
 
-	if err := utils.VerifyJWT(ctx.GetHeader("Authorization"), ctx.GetHeader("UserUUID")); err != nil {
-		// @todo frontend will call refresh token
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		ctx.Abort()
-		return
-	}
+	// if err := utils.VerifyJWT(ctx.GetHeader("Authorization"), ctx.GetHeader("UserUUID")); err != nil {
+	// 	// @todo frontend will call refresh token
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	// 	ctx.Abort()
+	// 	return
+	// }
 
 	ctx.Set("userId", 1)
 	ctx.Next()
