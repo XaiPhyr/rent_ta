@@ -15,7 +15,7 @@ type (
 	}
 
 	Space struct {
-		bun.BaseModel `bun:"table:space,alias:s"`
+		bun.BaseModel `bun:"table:spaces,alias:s"`
 
 		ID            int64           `bun:"id,pk,autoincrement" json:"id"`
 		UserID        int64           `bun:"user_id" json:"user_id"`
@@ -27,7 +27,7 @@ type (
 		PricePerMonth float64         `bun:"price_per_month,nullzero,default:0" json:"price_per_month"`
 		Size          float64         `bun:"size,nullzero,default:0" json:"size"`
 		Capacity      int64           `bun:"capacity,nullzero,default:0" json:"capacity"`
-		Availability  string          `bun:"space_status,default:A" json:"availability"`
+		Availability  string          `bun:"availability,default:A" json:"availability"`
 
 		AppModel
 	}
@@ -69,8 +69,33 @@ func (m Space) Upsert(ctx *gin.Context, item Space) (int, Space, error) {
 }
 
 func (m Space) Read(qp QueryParams) (res SpaceResults, err error) {
-	var coalesceCols = []string{}
-	var allowedSortFields = map[string]bool{}
+	var coalesceCols = []string{
+		"name",
+		"description",
+		"address->>'city'",
+		"address->>'country'",
+		"address->>'postal_code'",
+		"address->>'street'",
+		"address->>'latitude'",
+		"address->>'longitude'",
+		"price_per_hour::text",
+		"price_per_day::text",
+		"price_per_month::text",
+		"size::text",
+		"capacity::text",
+		"availability",
+	}
+
+	var allowedSortFields = map[string]bool{
+		"name":            true,
+		"address":         true,
+		"price_per_hour":  true,
+		"price_per_day":   true,
+		"price_per_month": true,
+		"size":            true,
+		"capacity":        true,
+		"availability":    true,
+	}
 
 	q := db.NewSelect()
 
