@@ -8,12 +8,6 @@ import (
 )
 
 type (
-	SpaceResults struct {
-		Space  Space
-		Spaces []Space
-		Count  int
-	}
-
 	Space struct {
 		bun.BaseModel `bun:"table:spaces,alias:s"`
 
@@ -68,7 +62,7 @@ func (m Space) Upsert(ctx *gin.Context, item Space) (int, Space, error) {
 	return httpStatus, item, err
 }
 
-func (m Space) Read(qp QueryParams) (res SpaceResults, err error) {
+func (m Space) Read(qp QueryParams) (res Results, err error) {
 	var coalesceCols = []string{
 		"name",
 		"description",
@@ -100,11 +94,22 @@ func (m Space) Read(qp QueryParams) (res SpaceResults, err error) {
 	q := db.NewSelect()
 
 	if qp.UUID != "all" {
-		return res, q.Model(&res.Space).Where("uuid = ?", qp.UUID).Scan(qp.Ctx)
+		var data Space
+		err = q.Model(&data).Where("uuid = ?", qp.UUID).Scan(qp.Ctx)
+
+		res.Item = data
+
+		return res, err
 	}
 
-	q = sanitizeQuery(q.Model(&res.Spaces), qp, coalesceCols, allowedSortFields)
+	var data []Space
+	q = sanitizeQuery(q.Model(&data), qp, coalesceCols, allowedSortFields)
 	res.Count, err = q.ScanAndCount(qp.Ctx)
+
+	for _, item := range data {
+		res.Items = append(res.Items, item)
+	}
+
 	return res, err
 }
 

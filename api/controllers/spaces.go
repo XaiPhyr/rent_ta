@@ -47,10 +47,10 @@ func (c SpaceController) Read(ctx *gin.Context) {
 		return
 	}
 
-	data := gin.H{"total": res.Count, "data": res.Spaces}
+	data := gin.H{"total": res.Count, "data": res.Items}
 
 	if ctx.Param("uuid") != "all" {
-		data = gin.H{"data": res.Space}
+		data = gin.H{"data": res.Item}
 	}
 
 	ctx.JSON(http.StatusOK, data)
