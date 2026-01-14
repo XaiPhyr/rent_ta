@@ -4,21 +4,14 @@
   import Icons from '@/components/Icons.vue';
   import Notifications from '@/components/Notifications.vue';
   import Navigations from '@/components/Navigations.vue';
+  import type { RoutesInterface } from '@/interfaces/RoutesInterfaces';
 
   const router = useRouter();
   const route = useRoute();
 
-  interface RouteItem {
-    name: string;
-    icon: string;
-    title: string;
-    callback: () => void;
-  }
-
-  interface RouteItems extends Array<RouteItem> {}
-
-  const items: RouteItems = [
+  const items: RoutesInterface = [
     {
+      path: '',
       name: 'dashboard',
       icon: 'home',
       title: 'Home',
@@ -27,6 +20,7 @@
       },
     },
     {
+      path: '',
       name: 'all-donations',
       icon: 'wallet',
       title: 'All Donations',
@@ -35,6 +29,7 @@
       },
     },
     {
+      path: '',
       name: 'my-donations',
       icon: 'heart',
       title: 'My Donations',
@@ -43,6 +38,7 @@
       },
     },
     {
+      path: '',
       name: 'profile',
       icon: 'user',
       title: 'Profile',

@@ -1,4 +1,4 @@
-import type { RoutesInterface } from '@/interfaces/routes';
+import type { RoutesInterface } from '@/interfaces/RoutesInterfaces';
 import defaultLayout from '@/layouts/default.vue';
 
 import Error404 from '@/views/error-404.vue';
@@ -11,16 +11,23 @@ import AllDonations from '@/views/all-donations.vue';
 import Article from '@/views/article.vue';
 
 const routes: RoutesInterface = [
-  { path: '/:pathMatch(.*)*', name: 'NotFound', component: Error404 },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: Error404,
+    title: '',
+  },
   {
     path: '/',
     name: 'splash',
     component: Splash,
+    title: '',
   },
   {
     path: '/login',
     name: 'login',
     component: Login,
+    title: '',
   },
   {
     path: '/dashboard',
@@ -29,6 +36,7 @@ const routes: RoutesInterface = [
     meta: {
       layout: defaultLayout,
     },
+    title: '',
   },
   {
     path: '/profile',
@@ -37,6 +45,7 @@ const routes: RoutesInterface = [
     meta: {
       layout: defaultLayout,
     },
+    title: '',
   },
   {
     path: '/my-donations',
@@ -45,6 +54,7 @@ const routes: RoutesInterface = [
     meta: {
       layout: defaultLayout,
     },
+    title: '',
   },
   {
     path: '/all-donations',
@@ -53,6 +63,7 @@ const routes: RoutesInterface = [
     meta: {
       layout: defaultLayout,
     },
+    title: '',
   },
   {
     path: '/article/:uuid',
@@ -61,6 +72,7 @@ const routes: RoutesInterface = [
     meta: {
       layout: defaultLayout,
     },
+    title: '',
   },
 ];
 
