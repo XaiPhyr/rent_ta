@@ -9,6 +9,8 @@ import Profile from '@/views/profile.vue';
 import MyDonations from '@/views/my-donations.vue';
 import AllDonations from '@/views/all-donations.vue';
 import Article from '@/views/article.vue';
+import AddCourt from '@/views/court-wizard/add-court.vue';
+import CourtDashboard from '@/views/court/dashboard.vue';
 
 const routes: RoutesInterface = [
   {
@@ -73,6 +75,24 @@ const routes: RoutesInterface = [
       layout: defaultLayout,
     },
     title: '',
+  },
+  {
+    path: '/court-wizard/add',
+    name: 'add-court',
+    component: AddCourt,
+    meta: {
+      layout: defaultLayout, // Or potentially a different layout if needed
+    },
+    title: 'Add New Court',
+  },
+  {
+    path: '/court/dashboard',
+    name: 'court-dashboard',
+    component: CourtDashboard,
+    meta: {
+      layout: defaultLayout,
+    },
+    title: 'Court Dashboard',
   },
 ];
 

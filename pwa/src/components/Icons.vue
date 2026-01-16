@@ -14,6 +14,8 @@
   import UserIcon from '@/svg/user.svg';
   import HeartIcon from '@/svg/heart.svg';
   import WalletIcon from '@/svg/wallet.svg';
+  import CourtIcon from '@/svg/court.svg';
+
 
   const props = defineProps({
     icon: { type: String, required: true, default: '' },
@@ -37,7 +39,9 @@
     user: UserIcon,
     heart: HeartIcon,
     wallet: WalletIcon,
+    court: CourtIcon,
   };
+
 </script>
 
 <template>

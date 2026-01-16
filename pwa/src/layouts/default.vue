@@ -46,6 +46,15 @@
         router.push({ name: 'profile' });
       },
     },
+    {
+      path: '',
+      name: 'court-dashboard',
+      icon: 'court',
+      title: 'Courts',
+      callback: () => {
+        router.push({ name: 'court-dashboard' });
+      },
+    },
   ];
 
   function setViewportHeight() {

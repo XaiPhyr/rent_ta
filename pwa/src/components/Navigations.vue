@@ -66,6 +66,14 @@
         onRedirect('profile');
       },
     },
+    {
+      name: 'court-dashboard',
+      icon: 'court',
+      title: 'Courts',
+      callback: () => {
+        onRedirect('court-dashboard');
+      },
+    },
   ];
 </script>
 
