@@ -43,22 +43,6 @@
       },
     },
     {
-      name: 'all-donations',
-      icon: 'wallet',
-      title: 'All Donations',
-      callback: () => {
-        onRedirect('all-donations');
-      },
-    },
-    {
-      name: 'my-donations',
-      icon: 'heart',
-      title: 'My Donations',
-      callback: () => {
-        onRedirect('my-donations');
-      },
-    },
-    {
       name: 'profile',
       icon: 'user',
       title: 'Profile',

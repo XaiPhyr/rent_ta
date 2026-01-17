@@ -6,8 +6,6 @@ import Splash from '@/views/splash.vue';
 import Dashboard from '../views/dashboard.vue';
 import Login from '@/views/login.vue';
 import Profile from '@/views/profile.vue';
-import MyDonations from '@/views/my-donations.vue';
-import AllDonations from '@/views/all-donations.vue';
 import Article from '@/views/article.vue';
 import AddCourt from '@/views/court-wizard/add-court.vue';
 import CourtDashboard from '@/views/court/dashboard.vue';
@@ -44,24 +42,6 @@ const routes: RoutesInterface = [
     path: '/profile',
     name: 'profile',
     component: Profile,
-    meta: {
-      layout: defaultLayout,
-    },
-    title: '',
-  },
-  {
-    path: '/my-donations',
-    name: 'my-donations',
-    component: MyDonations,
-    meta: {
-      layout: defaultLayout,
-    },
-    title: '',
-  },
-  {
-    path: '/all-donations',
-    name: 'all-donations',
-    component: AllDonations,
     meta: {
       layout: defaultLayout,
     },

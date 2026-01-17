@@ -21,24 +21,6 @@
     },
     {
       path: '',
-      name: 'all-donations',
-      icon: 'wallet',
-      title: 'All Donations',
-      callback: () => {
-        router.push({ name: 'all-donations' });
-      },
-    },
-    {
-      path: '',
-      name: 'my-donations',
-      icon: 'heart',
-      title: 'My Donations',
-      callback: () => {
-        router.push({ name: 'my-donations' });
-      },
-    },
-    {
-      path: '',
       name: 'profile',
       icon: 'user',
       title: 'Profile',

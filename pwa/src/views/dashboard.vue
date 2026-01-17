@@ -70,53 +70,6 @@
           />
         </div>
 
-        <div
-          class="w-full h-auto shadow bg-gray-50 rounded-xl p-4 bg-indigo-400"
-        >
-          <div class="flex items-center justify-between">
-            <div class="text-white">
-              <div class="font-bold">Start your</div>
-              <div class="font-bold text-2xl">Adventure here</div>
-            </div>
-
-            <div
-              class="cursor-pointer bg-white rounded-xl px-4 py-2 font-bold active:scale-95"
-            >
-              Start here <span class="italic">!</span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="w-full h-auto shadow bg-gray-50 rounded-xl p-4 bg-green-900"
-        >
-          <div class="flex items-center">
-            <div class="font-bold text-white text-xl">
-              Total Donations: ${{ total }}
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center font-bold text-xl">Causes</div>
-
-        <div class="w-full overflow-auto">
-          <div class="flex items-center gap-2">
-            <div
-              v-for="({ text, value }, index) in categories"
-              :key="index"
-              class="w-auto h-auto cursor-pointer px-8 py-2 rounded-xl active:scale-95"
-              :class="
-                selectedCategories.includes(value)
-                  ? 'bg-indigo-900 text-white'
-                  : 'bg-white'
-              "
-              @click="setSelectedCategories(value)"
-            >
-              {{ text }}
-            </div>
-          </div>
-        </div>
-
         <Card
           v-for="(
             { title, content, image, published_by }, index
